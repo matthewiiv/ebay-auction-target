@@ -1,0 +1,29 @@
+{
+  "name": "ebay-auction-target",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matthewiiv/ebay-auction-target.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/matthewiiv/ebay-auction-target/issues"
+  },
+  "homepage": "https://github.com/matthewiiv/ebay-auction-target#readme",
+  "dependencies": {
+    "hapi": "^15.1.1",
+    "inert": "^4.0.2",
+    "path": "^0.12.7",
+    "superagent": "^2.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.10.2"
+  }
+}
