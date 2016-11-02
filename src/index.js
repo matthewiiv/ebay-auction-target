@@ -32,35 +32,49 @@ server.register(require('inert'), (err) => {
 const appId = 'MatthewS-ebayauct-PRD-2bff6a2ad-3463f427';
 
 function queryEbay() {
-  let url = "http://svcs.ebay.com/services/search/FindingService/v1";
-  url += "?OPERATION-NAME=findItemsAdvanced";
-  url += "&SERVICE-VERSION=1.0.0";
-  url += "&SECURITY-APPNAME=" + appId;
-  url += "&GLOBAL-ID=EBAY-GB";
-  url += "&RESPONSE-DATA-FORMAT=JSON";
-  url += "&REST-PAYLOAD=true";
-  //url += "&keywords=tolkein";
-  url += "&categoryId=7294";
-  url += "&itemFilter(0).name=MaxPrice";
-  url += "&itemFilter(0).value=1";
-  url += "&itemFilter(1).name=EndTimeFrom";
-  url += "&itemFilter(1).value=2016-11-02T16:00:00.768Z";
-  url += "&itemFilter(2).name=EndTimeTo";
-  url += "&itemFilter(2).value=2016-11-02T20:00:00.768Z";
-  url += "&itemFilter(3).name=LocatedIn";
-  url += "&itemFilter(3).value=GB";
-
-  request
-    .get(url)
-    .end((err, res) => {
-
-      const items = JSON.parse(res.text).findItemsAdvancedResponse[0].searchResult[0].item
-      getBadDescriptions([], items);
-    });
+  getItemsFromCategory([], 1)
 };
+
+function getItemsFromCategory(items, page) {
+  const itemsRoot = 'http://svcs.ebay.com/services/search/FindingService/v1';
+  const itemsParams = {
+    "OPERATION-NAME": "findItemsAdvanced",
+    "SERVICE-VERSION": "1.0.0",
+    "SECURITY-APPNAME": appId,
+    "GLOBAL-ID": "EBAY-GB",
+    "RESPONSE-DATA-FORMAT": "JSON",
+    "REST-PAYLOAD": "true",
+    //"&keywords=tolkein";
+    "categoryId": "7294",
+    "paginationInput.pageNumber": page,
+    "itemFilter(0).name": "MaxPrice",
+    "itemFilter(0).value": "1",
+    "itemFilter(1).name": "EndTimeFrom",
+    "itemFilter(1).value": "2016-11-04T16:00:00.768Z",
+    "itemFilter(2).name": "EndTimeTo",
+    "itemFilter(2).value": "2016-11-04T20:00:00.768Z",
+    "itemFilter(3).name": "LocatedIn",
+    "itemFilter(3).value": "GB"
+  }
+  const itemsUrl = constructURL(itemsRoot, itemsParams);
+  request
+    .get(itemsUrl)
+    .end((err, res) => {
+      if (JSON.parse(res.text).findItemsAdvancedResponse[0].searchResult[0].item) {
+        const currentItems = items.concat(JSON.parse(res.text).findItemsAdvancedResponse[0].searchResult[0].item)
+        console.log(JSON.parse(res.text).findItemsAdvancedResponse[0].paginationOutput[0])
+        if (parseInt(JSON.parse(res.text).findItemsAdvancedResponse[0].paginationOutput[0].totalPages) > page) {
+          getItemsFromCategory(currentItems, page + 1)
+        } else {
+          getBadDescriptions([], currentItems);
+        }
+      }
+    });
+}
 
 function getBadDescriptions(currentBadDescriptions, possibleItems) {
   if (possibleItems.length > 4) {
+    console.log(possibleItems.length)
     const currentCall = possibleItems.slice(0, 5);
     let promises = currentCall.map((el) => {
       return new Promise((resolve, reject) => {
@@ -88,8 +102,10 @@ function getBadDescriptions(currentBadDescriptions, possibleItems) {
     Promise.all(promises).then((res) => {
       const nextBadDescriptions = res.reduce((acc, el) => {
         const rawDescription = el.Item.Description;
+        const itemUrl = el.Item.ViewItemURLForNaturalSearch
         const description = cleanDescription(rawDescription);
-        return description.length > 50 ? acc : acc.concat([description]);
+        const pictures = el.Item.PictureURL.length;
+        return description.length > 50 || pictures > 2 ? acc : acc.concat([{ description, itemUrl }]);
       }, currentBadDescriptions)
       if (nextBadDescriptions.length > 4) {
         console.log(nextBadDescriptions);
