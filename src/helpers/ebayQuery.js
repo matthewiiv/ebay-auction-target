@@ -121,3 +121,7 @@ function cleanDescription(rawDescription) {
 function cut(str, cutStart, cutEnd){
   return str.substr(0,cutStart) + str.substr(cutEnd+1);
 }
+
+module.exports = queryEbay;
+
+

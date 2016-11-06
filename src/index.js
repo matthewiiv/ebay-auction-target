@@ -1,5 +1,6 @@
 const Hapi = require('hapi');
 const path = require('path');
+const queryEbay = require('./helpers/ebayQuery')
 
 const server = new Hapi.Server();
 server.connection({ port: process.env.PORT || 8080 });
@@ -23,6 +24,7 @@ server.register(require('inert'), (err) => {
       throw err;
     }
     console.log('Server running at:', server.info.uri);
+    queryEbay();
   });
 });
 
