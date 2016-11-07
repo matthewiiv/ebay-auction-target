@@ -9,6 +9,15 @@ server.register(require('inert'), (err) => {
   if (err) {
     throw err;
   }
+
+  server.route({
+    method: 'GET',
+    path: '/items',
+    handler: {
+      queryEbay();
+    }
+  })
+
   server.route({
     method: 'GET',
     path: '/{param*}',
