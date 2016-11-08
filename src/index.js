@@ -14,7 +14,9 @@ server.register(require('inert'), (err) => {
     method: 'GET',
     path: '/items',
     handler: {
-      queryEbay();
+      queryEbay((items) => {
+        reply(items).code(200)
+      });
     }
   })
 
@@ -33,7 +35,6 @@ server.register(require('inert'), (err) => {
       throw err;
     }
     console.log('Server running at:', server.info.uri);
-    queryEbay();
   });
 });
 
