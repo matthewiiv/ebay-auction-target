@@ -9,7 +9,6 @@ server.register(require('inert'), (err) => {
   if (err) {
     throw err;
   }
-
   server.route({
     method: 'GET',
     path: '/items',
@@ -19,7 +18,6 @@ server.register(require('inert'), (err) => {
       });
     }
   })
-
   server.route({
     method: 'GET',
     path: '/{param*}',
